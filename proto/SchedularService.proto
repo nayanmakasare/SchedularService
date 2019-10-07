@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package SchedularService;
+
+service SchedularService{
+    rpc ApplySchedule(ApplyRequest) returns (ServiceResponse);
+    rpc MakeSchedule(Schedule) returns (ServiceResponse);
+    rpc GetSchedule(RequestSchedule) returns (UserScheduleResponse);
+}
+
+message ApplyRequest {
+    string Vendor = 1;
+    string Brand = 2 ;
+}
+
+message UserScheduleResponse{
+    repeated LauncherPage LauncherPage = 1;
+}
+
+message LauncherPage{
+    string PageName = 1;
+    repeated Carousel Carousel = 2;
+    repeated LauncherRows LauncherRows = 3;
+}
+
+message LauncherRows{
+    string RowName = 1;
+    string RowId = 2;
+}
+
+message ServiceResponse {
+    bool IsSuccessfull = 1;
+}
+
+message RequestSchedule{
+    string Vendor = 1;
+    string Brand = 2 ;
+}
+
+message Schedule{
+    string TimeZone = 4;
+    string Vendor = 1;
+    string Brand  = 2;
+    repeated Page Page = 3;
+}
+
+message Page {
+    string PageName = 1;
+    repeated Carousel Carousel = 2;
+    repeated Rows Rows = 3;
+}
+
+message Carousel {
+    string Target  = 1;
+    string Source = 2;
+    string ImageUrl = 3;
+}
+
+message Rows {
+    string RowName = 1;
+    repeated string GenerList = 2;
+    repeated string LanguageList = 3;
+    repeated string CategoryList = 4;
+}
+
+
+
