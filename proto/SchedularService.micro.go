@@ -34,8 +34,7 @@ var _ server.Option
 // Client API for SchedularService service
 
 type SchedularService interface {
-	ApplySchedule(ctx context.Context, in *ApplyRequest, opts ...client.CallOption) (*ServiceResponse, error)
-	MakeSchedule(ctx context.Context, in *Schedule, opts ...client.CallOption) (*ServiceResponse, error)
+	MakeSchedule(ctx context.Context, in *CloudwalkerScheduler, opts ...client.CallOption) (*ServiceResponse, error)
 	GetSchedule(ctx context.Context, in *RequestSchedule, opts ...client.CallOption) (*UserScheduleResponse, error)
 }
 
@@ -57,17 +56,7 @@ func NewSchedularService(name string, c client.Client) SchedularService {
 	}
 }
 
-func (c *schedularService) ApplySchedule(ctx context.Context, in *ApplyRequest, opts ...client.CallOption) (*ServiceResponse, error) {
-	req := c.c.NewRequest(c.name, "SchedularService.ApplySchedule", in)
-	out := new(ServiceResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *schedularService) MakeSchedule(ctx context.Context, in *Schedule, opts ...client.CallOption) (*ServiceResponse, error) {
+func (c *schedularService) MakeSchedule(ctx context.Context, in *CloudwalkerScheduler, opts ...client.CallOption) (*ServiceResponse, error) {
 	req := c.c.NewRequest(c.name, "SchedularService.MakeSchedule", in)
 	out := new(ServiceResponse)
 	err := c.c.Call(ctx, req, out, opts...)
@@ -90,15 +79,13 @@ func (c *schedularService) GetSchedule(ctx context.Context, in *RequestSchedule,
 // Server API for SchedularService service
 
 type SchedularServiceHandler interface {
-	ApplySchedule(context.Context, *ApplyRequest, *ServiceResponse) error
-	MakeSchedule(context.Context, *Schedule, *ServiceResponse) error
+	MakeSchedule(context.Context, *CloudwalkerScheduler, *ServiceResponse) error
 	GetSchedule(context.Context, *RequestSchedule, *UserScheduleResponse) error
 }
 
 func RegisterSchedularServiceHandler(s server.Server, hdlr SchedularServiceHandler, opts ...server.HandlerOption) error {
 	type schedularService interface {
-		ApplySchedule(ctx context.Context, in *ApplyRequest, out *ServiceResponse) error
-		MakeSchedule(ctx context.Context, in *Schedule, out *ServiceResponse) error
+		MakeSchedule(ctx context.Context, in *CloudwalkerScheduler, out *ServiceResponse) error
 		GetSchedule(ctx context.Context, in *RequestSchedule, out *UserScheduleResponse) error
 	}
 	type SchedularService struct {
@@ -112,11 +99,7 @@ type schedularServiceHandler struct {
 	SchedularServiceHandler
 }
 
-func (h *schedularServiceHandler) ApplySchedule(ctx context.Context, in *ApplyRequest, out *ServiceResponse) error {
-	return h.SchedularServiceHandler.ApplySchedule(ctx, in, out)
-}
-
-func (h *schedularServiceHandler) MakeSchedule(ctx context.Context, in *Schedule, out *ServiceResponse) error {
+func (h *schedularServiceHandler) MakeSchedule(ctx context.Context, in *CloudwalkerScheduler, out *ServiceResponse) error {
 	return h.SchedularServiceHandler.MakeSchedule(ctx, in, out)
 }
 

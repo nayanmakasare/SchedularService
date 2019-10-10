@@ -7,8 +7,10 @@ import (
 	"github.com/micro/go-micro/service/grpc"
 	"github.com/micro/go-micro/util/log"
 	SchedularService "github.com/nayanmakasare/SchedularService/proto"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"gopkg.in/robfig/cron.v3"
 	"time"
 )
 
@@ -18,7 +20,7 @@ const (
 	//defaultHost = "mongodb://192.168.1.143:27017"
 )
 
-func main(){
+func main() {
 	service := grpc.NewService(
 		micro.Name("SchedularService"),
 		micro.Address(":50055"),
@@ -33,13 +35,42 @@ func main(){
 	}
 	redisClient := GetRedisClient()
 
+	c := cron.New()
 
 	// Register Broker
 	publisher := micro.NewPublisher("applySchedule", service.Client())
 
-	h := SchedularServiceHandler{MongoCollection:mongoClient.Database("cloudwalker").Collection("schedule"),
-		RedisConnection:redisClient,
-		EventPublisher:publisher}
+	h := SchedularServiceHandler{
+		ScheduleCollection: mongoClient.Database("cloudwalker").Collection("schedule"),
+		RedisConnection:    redisClient,
+		EventPublisher:     publisher}
+
+	_, err = c.AddFunc("6-9,9-12,12-15,15-18,18-21,21-24,24-6 * * *", func() {
+		log.Info("Cron Triggered " + string(time.Now().Hour()))
+		scheduleCollection := mongoClient.Database("cloudwalker").Collection("schedule")
+		cur, err := scheduleCollection.Find(context.TODO(), bson.D{{}})
+		if err != nil {
+			log.Fatal(err)
+		}
+		for cur.Next(context.TODO()) {
+			var cloudwalkerSchedule SchedularService.CloudwalkerScheduler
+			err = cur.Decode(&cloudwalkerSchedule)
+			if err != nil {
+				log.Fatal(err)
+			}
+			err = publisher.Publish(context.TODO(), &cloudwalkerSchedule)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//staring cron job
+	c.Start()
 
 	//Register Handler
 	err = SchedularService.RegisterSchedularServiceHandler(service.Server(), &h)
@@ -51,7 +82,8 @@ func main(){
 	if err := service.Run(); err != nil {
 		log.Fatal(err)
 	}
-
+	log.Info("Stopping cron")
+	defer c.Stop()
 }
 
 func GetRedisClient() *redis.Client {

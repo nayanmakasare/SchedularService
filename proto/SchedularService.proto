@@ -2,10 +2,9 @@ syntax = "proto3";
 
 package SchedularService;
 
-service SchedularService{
-    rpc ApplySchedule(ApplyRequest) returns (ServiceResponse);
-    rpc MakeSchedule(Schedule) returns (ServiceResponse);
-    rpc GetSchedule(RequestSchedule) returns (UserScheduleResponse);
+service SchedularService {
+    rpc MakeSchedule (CloudwalkerScheduler) returns (ServiceResponse);
+    rpc GetSchedule (RequestSchedule) returns (UserScheduleResponse);
 }
 
 message ApplyRequest {
@@ -13,54 +12,64 @@ message ApplyRequest {
     string Brand = 2 ;
 }
 
-message UserScheduleResponse{
+message UserScheduleResponse {
     repeated LauncherPage LauncherPage = 1;
 }
 
-message LauncherPage{
+message LauncherPage {
     string PageName = 1;
     repeated Carousel Carousel = 2;
     repeated LauncherRows LauncherRows = 3;
+    int32 PageIndex = 4;
 }
 
-message LauncherRows{
+message LauncherRows {
     string RowName = 1;
     string RowId = 2;
+    int32 RowIndex = 3;
 }
 
 message ServiceResponse {
     bool IsSuccessfull = 1;
+    string message = 2;
 }
 
-message RequestSchedule{
+message RequestSchedule {
     string Vendor = 1;
     string Brand = 2 ;
 }
 
-message Schedule{
-    string TimeZone = 4;
-    string Vendor = 1;
-    string Brand  = 2;
-    repeated Page Page = 3;
+message CloudwalkerScheduler {
+    string vendor = 1;
+    string brand = 2;
+    repeated Schedule shedule = 3;
 }
 
-message Page {
-    string PageName = 1;
-    repeated Carousel Carousel = 2;
-    repeated Rows Rows = 3;
+message Schedule {
+    string timeZone = 1;
+    repeated Pages pages = 2;
+}
+
+message Pages {
+    string pageName = 1;
+    int32 pageIndex = 2;
+    repeated Carousel carousel = 3;
+    repeated Rows rows = 4;
 }
 
 message Carousel {
-    string Target  = 1;
-    string Source = 2;
-    string ImageUrl = 3;
+    string target = 1;
+    string source = 2;
+    string imageUrl = 3;
 }
 
 message Rows {
-    string RowName = 1;
-    repeated string GenerList = 2;
-    repeated string LanguageList = 3;
-    repeated string CategoryList = 4;
+    string rowname = 1;
+    int32 rowIndex = 2;
+    repeated string genreList = 3;
+    repeated string languagelist = 4;
+    repeated string categorylist = 5;
+    repeated string sourceList = 6;
 }
 
 
